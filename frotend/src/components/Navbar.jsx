@@ -16,20 +16,17 @@ const navigation = [
 
 const Navbar = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const cartItems = useSelector(state => state.cart.cartItems);
+    const cartItems = useSelector((state) => state.cart.cartItems);
     const { currentUser, logout, loading } = useAuth();
-    const token = localStorage.getItem('token');
+
     const handleLogOut = () => {
         logout();
-        localStorage.removeItem('token');
     };
-
-    
 
     return (
         <header className="max-w-screen-2xl mx-auto px-4 py-6">
             <nav className="flex justify-between items-center">
-                {/* Left side */}
+                {/* Left Side */}
                 <div className="flex items-center md:gap-16 gap-4">
                     <Link to="/">
                         <HiMiniBars3CenterLeft className="size-6" />
@@ -38,19 +35,25 @@ const Navbar = () => {
                     {/* Search Input */}
                     <div className="relative sm:w-72 w-40 space-x-2">
                         <IoSearchOutline className="absolute inline-block left-3 inset-y-2" />
-                        <input type="text" placeholder="Search here"
-                            className="bg-[#EAEAEA] w-full py-1 md:px-8 px-6 rounded-md focus:outline-none" />
+                        <input
+                            type="text"
+                            placeholder="Search here"
+                            className="bg-[#EAEAEA] w-full py-1 md:px-8 px-6 rounded-md focus:outline-none"
+                        />
                     </div>
                 </div>
 
-                {/* Right side */}
+                {/* Right Side */}
                 <div className="relative flex items-center md:space-x-3 space-x-2">
                     <div>
-                        {token ? ( // Corrected the missing opening brace here
+                        {currentUser ? (
                             <>
                                 <button onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
-                                    <img src={currentUser?.photoURL || avatarImg} alt="User Avatar"
-                                        className="size-7 rounded-full ring-2 ring-blue-500" />
+                                    <img
+                                        src={currentUser?.photoURL || avatarImg}
+                                        alt="User Avatar"
+                                        className="size-7 rounded-full ring-2 ring-blue-500"
+                                    />
                                 </button>
                                 {/* Show Dropdown */}
                                 {isDropdownOpen && (
@@ -64,7 +67,10 @@ const Navbar = () => {
                                                 </li>
                                             ))}
                                             <li>
-                                                <button onClick={handleLogOut} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">
+                                                <button
+                                                    onClick={handleLogOut}
+                                                    className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                                                >
                                                     Logout
                                                 </button>
                                             </li>

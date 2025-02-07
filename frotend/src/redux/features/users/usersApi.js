@@ -6,69 +6,67 @@ const API_URL = "http://localhost:5000/api/users"; // Adjust based on your backe
 export const registerUser = async (userData) => {
     try {
         const response = await axios.post(`${API_URL}/register`, userData);
-        console.log('Register Response:', response); // Log the response to the console
-        return response;
+        console.log("Register Response:", response.data);
+        return response.data;
     } catch (error) {
-        console.error('Error registering user:', error); // Log any error that occurs
+        console.error("Error registering user:", error);
         throw error;
     }
 };
 
-
 // Login User
-
 export const loginUser = async (userData) => {
     try {
         const response = await axios.post(`${API_URL}/login`, userData);
-        console.log('Login Response:', response);  // Log the response to check if the token is being sent back
 
-        // Assuming the response contains a token, save it in localStorage
-        if (response.data.token) {
-            localStorage.setItem("token", response.data.token);  // Save token in localStorage
-            console.log('Token saved in localStorage:', response.data.token);
+        if (response.data) {
+            return response.data; // Ensure only data is returned
+        } else {
+            throw new Error("Invalid response from server");
         }
-
-        return response;
     } catch (error) {
-        console.error('Error logging in:', error);  // Log any error that occurs
+        console.error("Error logging in:", error);
         throw error;
     }
 };
 
-// Get User Details
-export const getUser = async (token) => {
-    return await axios.get(`${API_URL}/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-    });
+
+// Fetch User Data (Authenticated)
+export const getUserData = async (token) => {
+    try {
+        const response = await axios.get(`${API_URL}/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log("User Data:", response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching user data:", error);
+        throw error;
+    }
 };
 
 // Update User
 export const updateUser = async (userData, token) => {
-    return await axios.put(`${API_URL}/me`, userData, {
-        headers: { Authorization: `Bearer ${token}` },
-    });
+    try {
+        const response = await axios.put(`${API_URL}/me`, userData, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error updating user:", error);
+        throw error;
+    }
 };
 
 // Delete User
 export const deleteUser = async (token) => {
-    return await axios.delete(`${API_URL}/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-    });
-};
-
-// Add getUserData to fetch user details by token
-export const getUserData = async (token) => {
     try {
-        console.log('Fetching user data with token:', token);  // Log token to verify it's being passed correctly
-        const response = await axios.get(`${API_URL}/me`, {
+        const response = await axios.delete(`${API_URL}/me`, {
             headers: { Authorization: `Bearer ${token}` },
         });
-        console.log('User data from getUserData:', response.data); // Log the response data
         return response.data;
     } catch (error) {
-        console.error('Error fetching user data:', error);
-        throw error; // Propagate error to useEffect
+        console.error("Error deleting user:", error);
+        throw error;
     }
 };
-
-

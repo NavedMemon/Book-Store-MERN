@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaGoogle } from "react-icons/fa";
 import { useForm } from "react-hook-form";
-import { registerUser } from "../redux/features/users/usersApi"; // Import API functions
+import { useAuth } from "../context/AuthContext";
 
 const Register = () => {
+  const { register: registerUser } = useAuth();
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
   
@@ -17,22 +17,8 @@ const Register = () => {
   const onSubmit = async (data) => {
     try {
       await registerUser(data);
-      alert("User registered successfully!");
-      navigate("/");
     } catch (error) {
       setMessage("Registration failed. Please try again.");
-      console.error(error);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    try {
-      await signInWithGoogle();
-      alert("Login successful!");
-      navigate("/dashboard");
-    } catch (error) {
-      alert("Google sign-in failed!");
-      console.error(error);
     }
   };
 
@@ -43,9 +29,7 @@ const Register = () => {
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-              Email
-            </label>
+            <label className="block text-gray-700 text-sm font-bold mb-2">Email</label>
             <input
               {...register("email", { required: "Email is required", pattern: /^\S+@\S+$/i })}
               type="email"
@@ -56,9 +40,7 @@ const Register = () => {
           </div>
 
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-              Password
-            </label>
+            <label className="block text-gray-700 text-sm font-bold mb-2">Password</label>
             <input
               {...register("password", { required: "Password is required", minLength: 6 })}
               type="password"
@@ -77,23 +59,8 @@ const Register = () => {
 
         <p className="mt-4 text-sm">
           Already have an account?{" "}
-          <Link to="/login" className="text-blue-500 hover:text-blue-700">
-            Login
-          </Link>
+          <Link to="/login" className="text-blue-500 hover:text-blue-700">Login</Link>
         </p>
-
-        {/* Google Sign In */}
-        <div className="mt-4">
-          <button
-            onClick={handleGoogleSignIn}
-            className="w-full flex items-center justify-center bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-          >
-            <FaGoogle className="mr-2" />
-            Sign in with Google
-          </button>
-        </div>
-
-        <p className="mt-5 text-center text-gray-500 text-xs">©2025 Book Store. All rights reserved.</p>
       </div>
     </div>
   );

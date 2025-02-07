@@ -1,74 +1,66 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { loginUser, getUserData } from "../redux/features/users/usersApi";
+
+import { loginUser, registerUser, getUserData } from "../redux/features/users/usersApi";
+
+import { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext();
-
-export const useAuth = () => {
-    return useContext(AuthContext);
-};
 
 export const AuthProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [token, setToken] = useState(localStorage.getItem("token") || "");
-    const navigate = useNavigate(); // For navigation
 
-    // Login User
-    const login = async (credentials) => {
+    // Load user from localStorage when app starts
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (token) {
+            getUserData(token)
+                .then((user) => {
+                    setCurrentUser(user);
+                })
+                .catch(() => {
+                    localStorage.removeItem("token"); // Remove invalid token
+                })
+                .finally(() => {
+                    setLoading(false);
+                });
+        } else {
+            setLoading(false);
+        }
+    }, []);
+
+    // Login function
+    const login = async (userData) => {
         try {
-            const res = await loginUser(credentials); // API call to login
-            const token = res.data.token;
-
-            if (token) {
-                localStorage.setItem("token", token); // Store token in localStorage
-                setToken(token); // Update state immediately
-
-                // Fetch user data immediately after login
-                const userData = await getUserData(token);
-                setCurrentUser(userData); // Update state to trigger re-render
-                setLoading(false); // Set loading to false once data is fetched
-
-                // Navigate to the home page after successful login
-                navigate("/");
+            const response = await loginUser(userData);
+            console.log("Login API Response:", response); // Debugging
+    
+            // Directly access response.token instead of response.data.token
+            if (response && response.token) {
+                const token = response.token;
+                localStorage.setItem("token", token);
+    
+                // Fetch user details using the token
+                const user = await getUserData(token);
+                setCurrentUser(user);
+            } else {
+                throw new Error("Invalid response from login API");
             }
         } catch (error) {
             console.error("Login failed:", error);
         }
     };
-
-    // Logout User
+    
+    // Logout function
     const logout = () => {
         localStorage.removeItem("token");
-        setToken(null);
         setCurrentUser(null);
-        setLoading(false); // Set loading to false immediately after logout
-        navigate("/login"); // Redirect to login page after logout
     };
 
-    // Fetch user data when component mounts
-    useEffect(() => {
-        if (token) {
-            getUserData(token)
-                .then((userData) => {
-                    setCurrentUser(userData);
-                    setLoading(false); // Set loading to false once data is fetched
-                })
-                .catch((error) => {
-                    console.error("Error fetching user data:", error);
-                    logout();
-                });
-        } else {
-            setLoading(false);
-        }
-    }, [token]);
-
-    const value = {
-        currentUser,
-        loading,
-        login,
-        logout,
-    };
-
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    return (
+        <AuthContext.Provider value={{ currentUser, login, logout, loading }}>
+            {children}
+        </AuthContext.Provider>
+    );
 };
+
+export const useAuth = () => useContext(AuthContext);
