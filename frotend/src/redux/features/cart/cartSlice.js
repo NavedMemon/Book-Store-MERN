@@ -13,7 +13,7 @@ const cartSlice = createSlice({
             const existingItem = state.cartItems.find(item => item._id === action.payload._id);
             if(!existingItem) {
                 state.cartItems.push(action.payload)
-                Swal.fire({ 
+                Swal.fire({
                     position: "top-end",
                     icon: "success",
                     title: "Product Added to the Cart",

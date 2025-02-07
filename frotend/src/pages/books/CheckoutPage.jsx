@@ -5,14 +5,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 import Swal from'sweetalert2';
-
-// import { useCreateOrderMutation } from '../../redux/features/orders/ordersApi';
+import { useCreateOrderMutation } from '../../redux/features/orders/ordersApi';
 
 const CheckoutPage = () => {
     const cartItems = useSelector(state => state.cart.cartItems);
     const totalPrice = cartItems.reduce((acc, item) => acc + item.newPrice, 0).toFixed(2);
-    const {currentUser} = useAuth()
-
+    const {  currentUser} = useAuth()
     const {
         register,
         handleSubmit,
@@ -20,7 +18,7 @@ const CheckoutPage = () => {
         formState: { errors },
     } = useForm()
 
-    
+    const [createOrder, {isLoading, error}] = useCreateOrderMutation();
     const navigate =  useNavigate()
 
     const [isChecked, setIsChecked] = useState(false)
@@ -42,7 +40,7 @@ const CheckoutPage = () => {
         }
         
         try {
-            
+            await createOrder(newOrder).unwrap();
             Swal.fire({
                 title: "Confirmed Order",
                 text: "Your order placed successfully!",
@@ -59,7 +57,7 @@ const CheckoutPage = () => {
         }
     }
 
-    // if(isLoading) return <div>Loading....</div>
+    if(isLoading) return <div>Loading....</div>
     return (
         <section>
             <div className="min-h-screen p-6 bg-gray-100 flex items-center justify-center">
@@ -67,7 +65,7 @@ const CheckoutPage = () => {
                     <div>
                         <div>
                             <h2 className="font-semibold text-xl text-gray-600 mb-2">Cash On Delevary</h2>
-                            <p className="text-gray-500 mb-2">Total Price: ₹{totalPrice}</p>
+                            <p className="text-gray-500 mb-2">Total Price: ${totalPrice}</p>
                             <p className="text-gray-500 mb-6">Items: {cartItems.length > 0 ? cartItems.length : 0}</p>
                         </div>
 
@@ -101,7 +99,7 @@ const CheckoutPage = () => {
                                                 <label html="phone">Phone Number</label>
                                                 <input
                                                     {...register("phone", { required: true })}
-                                                    type="number" name="phone" id="phone" className="h-10 border mt-1 rounded px-4 w-full bg-gray-50" placeholder="+91 983 456 7890" />
+                                                    type="number" name="phone" id="phone" className="h-10 border mt-1 rounded px-4 w-full bg-gray-50" placeholder="+91 987654321" />
                                             </div>
 
                                             <div className="md:col-span-3">
