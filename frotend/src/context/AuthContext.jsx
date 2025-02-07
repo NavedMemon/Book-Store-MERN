@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { loginUser, getUserData } from "../redux/features/users/usersApi"; // Make sure this API is from your backend
+import { useNavigate } from "react-router-dom";
+import { loginUser, getUserData } from "../redux/features/users/usersApi";
 
 const AuthContext = createContext();
 
@@ -10,69 +11,57 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [token, setToken] = useState(localStorage.getItem("token") || ""); // Token from localStorage
+    const [token, setToken] = useState(localStorage.getItem("token") || "");
+    const navigate = useNavigate(); // For navigation
 
     // Login User
-    const login = async (userData) => {
+    const login = async (credentials) => {
         try {
-            const response = await axios.post(`${API_URL}/login`, userData);
-            console.log("Login response:", response); // Log the response
-            const token = response.data.token; // Make sure token is in the response
+            const res = await loginUser(credentials); // API call to login
+            const token = res.data.token;
+
             if (token) {
                 localStorage.setItem("token", token); // Store token in localStorage
-                console.log("Token saved to localStorage:", token); // Log to ensure token is saved
+                setToken(token); // Update state immediately
+
+                // Fetch user data immediately after login
+                const userData = await getUserData(token);
+                setCurrentUser(userData); // Update state to trigger re-render
+                setLoading(false); // Set loading to false once data is fetched
+
+                // Navigate to the home page after successful login
+                navigate("/");
             }
-            return response;
         } catch (error) {
-            console.error("Error logging in:", error); // Log any error
-            throw error;
+            console.error("Login failed:", error);
         }
     };
-    
 
     // Logout User
     const logout = () => {
-        localStorage.removeItem("token"); // Remove token from localStorage
+        localStorage.removeItem("token");
         setToken(null);
-        setCurrentUser(null); // Reset currentUser
+        setCurrentUser(null);
+        setLoading(false); // Set loading to false immediately after logout
+        navigate("/login"); // Redirect to login page after logout
     };
 
-    // Fetch user data based on token on component mount
+    // Fetch user data when component mounts
     useEffect(() => {
-        const tokenFromLocalStorage = localStorage.getItem("token");
-        console.log('Token retrieved from localStorage:', tokenFromLocalStorage);  // Log token
-    
-        if (tokenFromLocalStorage) {
-            setToken(tokenFromLocalStorage); // Set token in state if exists
-        } else {
-            console.log("No token found in localStorage.");
-            setLoading(false); // No token, stop loading
-        }
-    }, []);
-    
-
-    useEffect(() => {
-        const tokenFromStorage = localStorage.getItem("token");
-    
-        if (tokenFromStorage) {
-            console.log("Token retrieved from localStorage:", tokenFromStorage);
-    
-            // If token exists, fetch user data
-            getUserData(tokenFromStorage)
+        if (token) {
+            getUserData(token)
                 .then((userData) => {
-                    setCurrentUser(userData); // Set user data from token
-                    setLoading(false); // Finish loading
+                    setCurrentUser(userData);
+                    setLoading(false); // Set loading to false once data is fetched
                 })
                 .catch((error) => {
                     console.error("Error fetching user data:", error);
-                    logout(); // Log the user out if fetching user data fails
+                    logout();
                 });
         } else {
-            console.log("No token found in localStorage.");
-            setLoading(false); // No token, stop loading
+            setLoading(false);
         }
-    }, []); // Empty dependency array means this runs once when the component is mounted
-    
+    }, [token]);
 
     const value = {
         currentUser,
