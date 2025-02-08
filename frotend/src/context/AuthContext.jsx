@@ -1,6 +1,4 @@
-
 import { loginUser, registerUser, getUserData } from "../redux/features/users/usersApi";
-
 import { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext();
@@ -33,23 +31,34 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await loginUser(userData);
             console.log("Login API Response:", response); // Debugging
-    
-            // Directly access response.token instead of response.data.token
-            if (response && response.token) {
-                const token = response.token;
-                localStorage.setItem("token", token);
-    
-                // Fetch user details using the token
-                const user = await getUserData(token);
-                setCurrentUser(user);
-            } else {
-                throw new Error("Invalid response from login API");
-            }
+            
+            const token = response?.token || response?.data?.token;
+            if (!token) throw new Error("Invalid response from login API");
+
+            localStorage.setItem("token", token);
+
+            // Fetch user details using the token
+            const user = await getUserData(token);
+            setCurrentUser(user);
+            return user; // Return user data for handling redirects
         } catch (error) {
             console.error("Login failed:", error);
+            throw error;
         }
     };
-    
+
+    // **Register function**
+    const register = async (userData) => {
+        try {
+            const response = await registerUser(userData);
+            console.log("Register API Response:", response);
+            return response; // Return response for handling navigation in Register.jsx
+        } catch (error) {
+            console.error("Registration failed:", error);
+            throw error;
+        }
+    };
+
     // Logout function
     const logout = () => {
         localStorage.removeItem("token");
@@ -57,8 +66,8 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ currentUser, login, logout, loading }}>
-            {children}
+        <AuthContext.Provider value={{ currentUser, login, register, logout, loading }}>
+            {!loading && children}
         </AuthContext.Provider>
     );
 };

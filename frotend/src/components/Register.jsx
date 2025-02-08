@@ -4,10 +4,10 @@ import { useForm } from "react-hook-form";
 import { useAuth } from "../context/AuthContext";
 
 const Register = () => {
-  const { register: registerUser } = useAuth();
+  const { register: authRegister } = useAuth(); // Renaming to avoid conflict
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
-  
+
   const {
     register,
     handleSubmit,
@@ -16,7 +16,11 @@ const Register = () => {
 
   const onSubmit = async (data) => {
     try {
-      await registerUser(data);
+      const response = await authRegister(data);
+      console.log("User registered:", response);
+
+      // Redirect to login after successful registration
+      navigate("/login");
     } catch (error) {
       setMessage("Registration failed. Please try again.");
     }
