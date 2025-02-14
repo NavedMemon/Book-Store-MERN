@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
                     setCurrentUser(user);
                 })
                 .catch(() => {
-                    localStorage.removeItem("token"); // Remove invalid token
+                    localStorage.removeItem("token");   // Remove invalid token
                 })
                 .finally(() => {
                     setLoading(false);

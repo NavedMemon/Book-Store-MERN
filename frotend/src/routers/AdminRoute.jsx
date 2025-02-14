@@ -1,12 +1,25 @@
-import React from 'react'
-import { Navigate, Outlet } from 'react-router-dom';
+import React from "react";
+import { Navigate } from "react-router-dom";
 
-const AdminRoute = ({children}) => {
-  const token = localStorage.getItem('token');
-  if(!token) {
-    return <Navigate to="/admin"/>
+// ✅ Directly get token from localStorage
+const AdminRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+  const adminEmail = "admin@gmail.com"; // Admin Email
+
+  // ✅ Check if token exists
+  if (!token) {
+    return <Navigate to="/login" replace />;
   }
-  return children ?  children : <Outlet/>;
-}
 
-export default AdminRoute
+  // ✅ Decode token (if using JWT) or fetch from localStorage
+  const user = JSON.parse(localStorage.getItem("user")); // Assuming user is stored in localStorage
+
+  // ✅ Redirect non-admin users
+  if (!user || user.email !== adminEmail) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
+export default AdminRoute;

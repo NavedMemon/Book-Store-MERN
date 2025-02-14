@@ -4,12 +4,13 @@ import './App.css'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import { AuthProvider } from './context/AuthContext'
+import React from "react";
 
 function App() {
   
 
   return (
-    <>
+ 
     <AuthProvider>
     <Navbar/>
     <main className='min-h-screen max-w-screen-2xl mx-auto px-4 py-6 font-primary'>
@@ -17,7 +18,7 @@ function App() {
     </main>
     <Footer/>
     </AuthProvider>
-    </>
+   
   )
 }
 

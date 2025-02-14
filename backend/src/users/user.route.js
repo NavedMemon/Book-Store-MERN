@@ -1,9 +1,10 @@
 const express = require("express");
 const { check, validationResult } = require("express-validator");
-const { registerUser, loginUser, deleteUser, updateUser } = require("./user.controller"); // ✅ Added updateUser
-const authMiddleware = require("../middleware/authMiddleware");
+const { registerUser, loginUser, deleteUser, updateUser } = require("./user.controller");
+const authMiddleware = require("../middleware/authMiddleware")
 const router = express.Router();
 const User = require("./user.model");
+
 
 // Registration Route
 router.post(

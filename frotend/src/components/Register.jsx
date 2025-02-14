@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../context/AuthContext";
 
 const Register = () => {
-  const { register: authRegister } = useAuth(); // Renaming to avoid conflict
+  const { register: authRegister, currentUser } = useAuth(); // Get currentUser
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
@@ -13,6 +13,13 @@ const Register = () => {
     handleSubmit,
     formState: { errors },
   } = useForm();
+
+  // Redirect if the user is already logged in
+  useEffect(() => {
+    if (currentUser) {
+      navigate("/"); // Redirect to home or another page
+    }
+  }, [currentUser, navigate]);
 
   const onSubmit = async (data) => {
     try {

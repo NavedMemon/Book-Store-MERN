@@ -1,43 +1,75 @@
-import React from 'react'
-import { useGetOrderByEmailQuery } from '../../redux/features/orders/ordersApi'
-import { useAuth } from '../../context/AuthContext';
+import React, { useEffect } from "react";
+import { useGetOrderByEmailQuery } from "../../redux/features/orders/ordersApi";
+import { useAuth } from "../../context/AuthContext";
+import { getImgUrl } from "../../utils/getImgUrl";
+import { useLocation } from "react-router-dom";
 
 const OrderPage = () => {
-    const { currentUser} = useAuth()
+  const { currentUser } = useAuth();
+  const location = useLocation();
+  
+  const { data: orders = [], isLoading, isError, refetch } = useGetOrderByEmailQuery(currentUser?.email);
 
+  // ✅ Auto-refresh orders when navigating to this page
+  useEffect(() => {
+    refetch();
+  }, [location, refetch]);
 
-    const { data: orders = [], isLoading, isError } = useGetOrderByEmailQuery(currentUser?.email);
-    if (isLoading) return <div>Loading...</div>
-    if (isError) return <div>Error geting orders data</div>
-    return (
-        <div className='container mx-auto p-6'>
-            <h2 className='text-2xl font-semibold mb-4'>Your Orders</h2>
-            {
-                orders.length === 0 ? (<div>No orders found!</div>) : (<div>
-                    {
-                        orders.map((order, index) => (
-                            <div key={order._id} className="border-b mb-4 pb-4">
-                                <p className='p-1 bg-secondary text-white w-10 rounded mb-1'># {index + 1}</p>
-                                <h2 className="font-bold">Order ID: {order._id}</h2>
-                                <p className="text-gray-600">Name: {order.name}</p>
-                                <p className="text-gray-600">Email: {order.email}</p>
-                                <p className="text-gray-600">Phone: {order.phone}</p>
-                                <p className="text-gray-600">Total Price: ₹{order.totalPrice}</p>
-                                <h3 className="font-semibold mt-2">Address:</h3>
-                                <p> {order.address.city}, {order.address.state}, {order.address.country}, {order.address.zipcode}</p>
-                                <h3 className="font-semibold mt-2">Products Id:</h3>
-                                <ul>
-                                    {order.productIds.map((productId) => (
-                                        <li key={productId}>{productId}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))
-                    }
-                </div>)
-            }
+  if (isLoading) return <div className="text-center text-lg font-semibold">Loading...</div>;
+  if (isError) return <div className="text-center text-red-500">Error fetching orders</div>;
+
+  console.log("Orders from API:", orders); // ✅ Debugging log
+
+  return (
+    <div className="container mx-auto p-6">
+      <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Your Orders</h2>
+
+      {orders.length === 0 ? (
+        <div className="text-center text-lg text-gray-600">No orders found!</div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full border border-gray-300 shadow-lg rounded-lg">
+            <thead className="bg-gray-800 text-white text-left">
+              <tr>
+                <th className="p-3 border">#</th>
+                <th className="p-3 border">Order ID</th>
+                <th className="p-3 border">Products</th>
+                <th className="p-3 border">Total Price</th>
+                <th className="p-3 border">Address</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order, index) => (
+                <tr key={order._id} className="border-b hover:bg-gray-100 transition">
+                  <td className="p-4 border text-center font-semibold">{index + 1}</td>
+                  <td className="p-4 border text-sm text-gray-700">{order._id}</td>
+                  <td className="p-4 border">
+                    {order.productIds.map((product) => (
+                      <div key={product._id} className="flex items-center gap-4 py-2">
+                        <img 
+                          src={getImgUrl(product.coverImage) || "/default-image.jpg"} 
+                          alt={product.title || "Product"} 
+                          className="h-16 w-16 object-cover rounded border"
+                        />
+                        <div>
+                          <p className="font-semibold text-gray-800">{product.title || "Unknown Product"}</p>
+                          <p className="text-sm text-gray-500"><strong>Category:</strong> {product.category || "N/A"}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </td>
+                  <td className="p-4 border font-semibold text-gray-900">₹{order.totalPrice}</td>
+                  <td className="p-4 border text-sm text-gray-600">
+                    {order.address.city}, {order.address.state}, {order.address.country}, {order.address.zipcode}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-    )
-}
+      )}
+    </div>
+  );
+};
 
-export default OrderPage
+export default OrderPage;
