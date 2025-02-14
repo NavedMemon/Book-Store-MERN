@@ -12,13 +12,19 @@ app.use(cors({
     credentials: true
 }));
 
+app.use(express.urlencoded({ extended: true }));
+
 const bookRoutes = require('./src/books/book.route');
 const userRoutes = require('./src/users/user.route');
 const orderRoutes = require('./src/orders/order.route');
+const paymentRoutes = require("./src/stripe/stripe.route");
+
 
 app.use("/api/books", bookRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/payments", paymentRoutes);
+
 
 async function main() {
     await mongoose.connect(process.env.DB_URL);

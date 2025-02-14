@@ -1,6 +1,8 @@
 import axios from "axios";
 
 const API_URL = "http://localhost:5000/api/users"; // Adjust based on your backend
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import getBaseUrl from "../../../utils/baseURL";
 
 // Helper function to extract error messages
 const handleError = (error) => {
@@ -74,3 +76,38 @@ export const deleteUser = async (token) => {
         throw new Error(handleError(error));
     }
 };
+
+
+const baseQuery = fetchBaseQuery({
+    baseUrl: `${getBaseUrl()}/api/users`,  // ✅ Ensure this is correct
+    credentials: "include",
+    prepareHeaders: (headers) => {
+        const token = localStorage.getItem("token");
+        if (token) {
+            headers.set("Authorization", `Bearer ${token}`);
+        }
+        return headers;
+    },
+});
+
+const userApi = createApi({
+    reducerPath: "userApi",
+    baseQuery,
+    tagTypes: ["Users"],
+    endpoints: (builder) => ({
+        fetchAllUsers: builder.query({
+            query: () => "/",  // ✅ Ensure this matches the backend route
+            providesTags: ["Users"],
+        }),
+        deleteUser: builder.mutation({
+            query: (id) => ({
+                url: `/${id}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Users"],
+        }),
+    }),
+});
+
+export const { useFetchAllUsersQuery, useDeleteUserMutation } = userApi;
+export default userApi;
